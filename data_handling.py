@@ -195,7 +195,7 @@ def make_movie(movie_data, years, month, cmap, vmin, vmax, central_lon=0, name="
   video.release()
 
 class generator:
-  def __init__(self, query, cmap, lev=None):
+  def __init__(self, query, lev=None):
     self.query = query
 
     plt.style.use(
@@ -243,7 +243,7 @@ class generator:
     self.dt = cat.to_datatree(**kwargs)
 
     # self.data = dt[query["experiment_id"]][query["variable_id"]]
-    self.cmap = cmap
+    # self.cmap = cmap
     self.lev = lev
 
   def set_lev(self, lev):
@@ -276,7 +276,7 @@ class generator:
 
     return data_processed
 
-  def make_plot(self, time, title, central_lon=0, vmin=None, vmax=None):
+  def make_plot(self, time, cmap, title, central_lon=0, vmin=None, vmax=None):
     fig, ax = plt.subplots(
       ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
     )
@@ -290,7 +290,7 @@ class generator:
         x="lon",
         y="lat",
         transform=ccrs.PlateCarree(),
-        cmap=self.cmap,
+        cmap=cmap,
         robust=True,
       )
     except ValueError:
@@ -313,7 +313,7 @@ class generator:
 
     return fig
 
-  def make_animation(self, years, month, vmin, vmax, central_lon=0, name="animation"):
+  def make_animation(self, years, month, vmin, vmax, cmap, central_lon=0, name="animation"):
     movie_data = self.get_data_slides()
 
     if "time" not in movie_data.dims:
@@ -330,7 +330,7 @@ class generator:
       frame_data = movie_data.sel(time=f"{year}-{month}")
       p = generate_map_plot(
           data=frame_data,
-          cmap=self.cmap,  # color mapping from parameters
+          cmap=cmap,  # color mapping from parameters
           title=year,  # make sure to change title to what you want,
           central_lon=central_lon,
           vmin=vmin,
