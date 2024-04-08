@@ -90,7 +90,7 @@ def get_frame_data(query, time, col=col, kwargs=kwargs, lev=None):
 
 def generate_map_plot(data, cmap, title, vmin=None, vmax=None):
   fig, ax = plt.subplots(
-    ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.Robinson()}
+    ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree()}
   )
 
   try:
@@ -109,8 +109,13 @@ def generate_map_plot(data, cmap, title, vmin=None, vmax=None):
 
   ax.coastlines()
   ax.coastlines(color="grey", lw=0.5) #parameters for the lines on the coasts
-  # ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())
-  # ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
+
+  for lat in [-90, -60, -30, 0, 30, 60, 90]:
+      ax.axhline(lat,color='k',ls='--')
+    
+  ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())
+  ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
+  
   lon_formatter = LongitudeFormatter(zero_direction_label=True)
   lat_formatter = LatitudeFormatter()
 
@@ -265,7 +270,7 @@ class generator:
 
   def make_plot(self, time, title, vmin=None, vmax=None):
     fig, ax = plt.subplots(
-      ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.Robinson()}
+      ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree()}
     )
 
     data = self.get_data_frame(time)
@@ -285,8 +290,13 @@ class generator:
 
     ax.coastlines()
     ax.coastlines(color="grey", lw=0.5) #parameters for the lines on the coasts
-    # ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())
-    # ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
+
+    ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())
+    ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
+      
+    for lat in [-90, -60, -30, 0, 30, 60, 90]:
+      ax.axhline(lat,color='k',ls='--')
+    
     lon_formatter = LongitudeFormatter(zero_direction_label=True)
     lat_formatter = LatitudeFormatter()
 
