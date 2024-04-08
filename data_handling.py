@@ -225,32 +225,32 @@ class generator:
           ],  # make sure that we only get models which have all of the above experiments
       )
 
-    if len(cat) > 1:
-      print("Returned too many runs. Here is the output:")
-      print("Returned too many runs. Here is output:")
-      print(f"source_ids: {cat.df['source_id'].unique()}")
-      print(f"variable_ids: {cat.df['variable_id'].unique()}")
-      print(f"member_ids: {cat.df['member_id'].unique()}")
-      print(f"table_ids: {cat.df['table_id'].unique()}")
-      print(f"grid_labels: {cat.df['grid_label'].unique()}")
-      print(f"experiment_ids: {cat.df['experiment_id'].unique()}")
-      raise Exception(f"Query returned {len(cat)} different runs")
+    # if len(cat) > 1:
+    #   print("Returned too many runs. Here is the output:")
+    #   print("Returned too many runs. Here is output:")
+    #   print(f"source_ids: {cat.df['source_id'].unique()}")
+    #   print(f"variable_ids: {cat.df['variable_id'].unique()}")
+    #   print(f"member_ids: {cat.df['member_id'].unique()}")
+    #   print(f"table_ids: {cat.df['table_id'].unique()}")
+    #   print(f"grid_labels: {cat.df['grid_label'].unique()}")
+    #   print(f"experiment_ids: {cat.df['experiment_id'].unique()}")
+    #   raise Exception(f"Query returned {len(cat)} different runs")
 
     if len(cat) == 0:
       raise Exception(f"Query returned nothing")
 
-    cat.esmcat.aggregation_control.groupby_attrs = ["source_id", "experiment_id"]
-    dt = cat.to_datatree(**kwargs)
+    cat.esmcat.aggregation_control.groupby_attrs = ["experiment_id","variable_id"]
+    self.dt = cat.to_datatree(**kwargs)
 
-    self.data = dt[query["source_id"]][query["experiment_id"]].ds[query["variable_id"]]
+    # self.data = dt[query["experiment_id"]][query["variable_id"]]
     self.cmap = cmap
     self.lev = lev
 
   def set_lev(self, lev):
     self.lev = lev
 
-  def get_data_frame(self, time):
-    data_processed = self.data.sel(time=time).squeeze()
+  def get_data_frame(self, experiment, variable, time):
+    data_processed = self.dt[experiment][variable].sel(time=time, method='nearest').squeeze()
 
     if len(data_processed.dims) > 2:
       if self.lev is None:
@@ -262,15 +262,15 @@ class generator:
 
     return data_processed
 
-  def get_data_slides(self):
+  def get_data_slides(self, experiment, variable):
 
-    data_processed = self.data
+    data_processed = self.dt[experiment][variable]
 
     if len(data_processed.dims) > 3:
       if self.lev is None:
         raise Exception(f"Too many dimensions: {data_processed.dims}. Expected time, x, y")
       else:
-        data_processed = self.data.sel(lev=self.lev, method='nearest').squeeze()
+        data_processed = self.dt[experiment][variable].sel(lev=self.lev, method='nearest').squeeze()
         if len(data_processed.dims) > 3:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
 
