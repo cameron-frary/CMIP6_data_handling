@@ -100,7 +100,7 @@ def generate_map_plot(data, cmap, title, central_lon=180, vmin=None, vmax=None):
       vmax=vmax,
       x="lon",
       y="lat",
-      transform=ccrs.PlateCarree(central_longitude=central_lon),
+      transform=ccrs.PlateCarree(),
       cmap=cmap,
       robust=True,
     )
@@ -113,8 +113,8 @@ def generate_map_plot(data, cmap, title, central_lon=180, vmin=None, vmax=None):
   for lat in [-90, -60, -30, 0, 30, 60, 90]:
       ax.axhline(lat,color='k',ls='--')
     
-  ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
-  ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree(central_longitude=central_lon))
+  ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())
+  ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
   
   lon_formatter = LongitudeFormatter(zero_direction_label=True)
   lat_formatter = LatitudeFormatter()
