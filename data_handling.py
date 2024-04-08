@@ -155,8 +155,8 @@ def make_movie(movie_data, years, month, cmap, vmin, vmax, name="animation"):
   if "time" not in movie_data.dims:
     raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
 
-  !rm -r -f "/content/temp_images"
-  !mkdir -p "/content/temp_images"
+  os.system("rm -r -f '/content/temp_images'")
+  os.system("mkdir -p '/content/temp_images'")
 
   frames = []
 
