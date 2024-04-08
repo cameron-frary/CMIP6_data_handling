@@ -88,7 +88,7 @@ def get_frame_data(query, time, col=col, kwargs=kwargs, lev=None):
 
   return data_processed
 
-def generate_map_plot(data, cmap, title, central_lon=180, vmin=None, vmax=None):
+def generate_map_plot(data, cmap, title, central_lon=0, vmin=None, vmax=None):
   fig, ax = plt.subplots(
     ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
   )
@@ -155,7 +155,7 @@ def get_movie_data(query, time, col=col, kwargs=kwargs, lev=None):
 
   return data_processed
 
-def make_movie(movie_data, years, month, cmap, vmin, vmax, name="animation"):
+def make_movie(movie_data, years, month, cmap, vmin, vmax, central_lon=0, name="animation"):
 
   if "time" not in movie_data.dims:
     raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
@@ -171,8 +171,9 @@ def make_movie(movie_data, years, month, cmap, vmin, vmax, name="animation"):
         data=frame_data,
         cmap=cmap,  # color mapping from parameters
         title=year,  # make sure to change title to what you want,
+        central_lon=central_lon,
         vmin=vmin,
-        vmax=vmax
+        vmax=vmax,
     )
     plt.close()
     p.savefig(f'/content/temp_images/{year}.png')
@@ -275,9 +276,9 @@ class generator:
 
     return data_processed
 
-  def make_plot(self, time, title, vmin=None, vmax=None):
+  def make_plot(self, time, title, central_lon=0, vmin=None, vmax=None):
     fig, ax = plt.subplots(
-      ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree()}
+      ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
     )
 
     data = self.get_data_frame(time)
@@ -312,7 +313,7 @@ class generator:
 
     return fig
 
-  def make_animation(self, years, month, vmin, vmax, name="animation"):
+  def make_animation(self, years, month, vmin, vmax, central_lon=0, name="animation"):
     movie_data = self.get_data_slides()
 
     if "time" not in movie_data.dims:
@@ -331,6 +332,7 @@ class generator:
           data=frame_data,
           cmap=self.cmap,  # color mapping from parameters
           title=year,  # make sure to change title to what you want,
+          central_lon=central_lon,
           vmin=vmin,
           vmax=vmax
       )
