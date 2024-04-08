@@ -88,9 +88,9 @@ def get_frame_data(query, time, col=col, kwargs=kwargs, lev=None):
 
   return data_processed
 
-def generate_map_plot(data, cmap, title, vmin=None, vmax=None):
+def generate_map_plot(data, cmap, title, central_lon=0, vmin=None, vmax=None):
   fig, ax = plt.subplots(
-    ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree()}
+    ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
   )
 
   try:
@@ -100,7 +100,7 @@ def generate_map_plot(data, cmap, title, vmin=None, vmax=None):
       vmax=vmax,
       x="lon",
       y="lat",
-      transform=ccrs.PlateCarree(),
+      transform=ccrs.PlateCarree(central_longitude=central_lon),
       cmap=cmap,
       robust=True,
     )
@@ -113,8 +113,8 @@ def generate_map_plot(data, cmap, title, vmin=None, vmax=None):
   for lat in [-90, -60, -30, 0, 30, 60, 90]:
       ax.axhline(lat,color='k',ls='--')
     
-  ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())
-  ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
+  ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
+  ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree(central_longitude=central_lon))
   
   lon_formatter = LongitudeFormatter(zero_direction_label=True)
   lat_formatter = LatitudeFormatter()
