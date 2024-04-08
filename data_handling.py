@@ -88,7 +88,7 @@ def get_frame_data(query, time, col=col, kwargs=kwargs, lev=None):
 
   return data_processed
 
-def generate_map_plot(data, cmap, title, central_lon=0, vmin=None, vmax=None):
+def generate_map_plot(data, cmap, title, central_lon=180, vmin=None, vmax=None):
   fig, ax = plt.subplots(
     ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
   )
