@@ -250,7 +250,7 @@ class generator:
     self.lev = lev
 
   def get_data_frame(self, experiment, variable, time):
-    data_processed = self.dt[experiment][variable].sel(time=time, method='nearest').squeeze()
+    data_processed = self.dt[experiment][variable].sel(time=time).squeeze()
 
     if len(data_processed.dims) > 2:
       if self.lev is None:
