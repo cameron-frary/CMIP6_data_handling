@@ -196,7 +196,7 @@ class generator:
         "https://raw.githubusercontent.com/ClimateMatchAcademy/course-content/main/cma.mplstyle"
     )
 
-    %matplotlib inline
+    # %matplotlib inline
 
     col = intake.open_esm_datastore(
         "https://storage.googleapis.com/cmip6/pangeo-cmip6.json"
