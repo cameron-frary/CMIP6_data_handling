@@ -226,6 +226,13 @@ class generator:
 
     if len(cat) > 1:
       print("Returned too many runs. Here is the output:")
+      print("Returned too many runs. Here is output:")
+      print(f"source_ids: {cat.df['source_id'].unique()}")
+      print(f"variable_ids: {cat.df['variable_id'].unique()}")
+      print(f"member_ids: {cat.df['member_id'].unique()}")
+      print(f"table_ids: {cat.df['table_id'].unique()}")
+      print(f"grid_labels: {cat.df['grid_label'].unique()}")
+      print(f"experiment_ids: {cat.df['experiment_id'].unique()}")
       raise Exception(f"Query returned {len(cat)} different runs")
 
     if len(cat) == 0:
