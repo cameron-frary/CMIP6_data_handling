@@ -250,11 +250,11 @@ class generator:
     self.lev = lev
 
   def get_data_frame(self, experiment, variable, time):
-    return self.dt[experiment][variable]
+    # return self.dt[experiment][variable]
     
-    data_processed = self.dt[experiment][variable].ds.sel(time=time).squeeze()
+    data_processed = self.dt[experiment][variable].ds[variable].sel(time=time).squeeze()
 
-    print(data_processed)
+    # print(data_processed)
 
     if len(data_processed.dims) > 2:
       if self.lev is None:
