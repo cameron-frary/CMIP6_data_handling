@@ -250,6 +250,8 @@ class generator:
     self.lev = lev
 
   def get_data_frame(self, experiment, variable, time):
+    return self.dt[experiment][variable]
+    
     data_processed = self.dt[experiment][variable].ds.sel(time=time).squeeze()
 
     print(data_processed)
