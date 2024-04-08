@@ -184,7 +184,7 @@ def make_movie(movie_data, years, month, cmap, vmin, vmax, central_lon=0, name="
   video=cv2.VideoWriter(
       f'/content/{name}.mp4',
       cv2.VideoWriter.fourcc(*"mp4v"),  # remind cameron to fix encoding from MJPG
-      24, # fps
+      10, # fps
       (width,height)
   )
 
