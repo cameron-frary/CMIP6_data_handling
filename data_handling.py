@@ -48,7 +48,7 @@ kwargs = dict(
 )
 
 
-def get_frame_data(query, time, col, kwargs, lev=None):
+def get_frame_data(query, time, col=col, kwargs=kwargs, lev=None):
   cat = col.search(
       **query,
       require_all_on=[
@@ -119,7 +119,7 @@ def generate_map_plot(data, cmap, title, vmin=None, vmax=None):
 
   return fig
 
-def get_movie_data(query, time, col, kwargs, lev=None):
+def get_movie_data(query, time, col=col, kwargs=kwargs, lev=None):
   cat = col.search(
       **query,
       require_all_on=[
