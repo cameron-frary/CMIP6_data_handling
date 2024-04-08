@@ -268,7 +268,7 @@ class generator:
 
   def get_data_slides(self, experiment, variable):
 
-    data_processed = self.dt[experiment][variable]
+    data_processed = self.dt[experiment][variable].ds[variable].squeeze()
 
     if len(data_processed.dims) > 3:
       if self.lev is None:
