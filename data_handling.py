@@ -252,6 +252,8 @@ class generator:
   def get_data_frame(self, experiment, variable, time):
     data_processed = self.dt[experiment][variable].sel(time=time).squeeze()
 
+    print(data_processed)
+
     if len(data_processed.dims) > 2:
       if self.lev is None:
         raise Exception(f"Too many dimensions: {data_processed.dims}. Specify more!")
