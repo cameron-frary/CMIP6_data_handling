@@ -353,6 +353,8 @@ class generator:
       elif len(time) == 7:
         data_processed1 = data_processed1.sel(time=time)
 
+      print(data_processed1["time"].values)
+      print(data_processed["time"].values)
       return data_processed1 - data_processed
     
     return data_processed
