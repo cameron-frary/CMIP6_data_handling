@@ -391,7 +391,7 @@ class generator:
 
     return fig
 
-  def make_animation(self, years, vmin, vmax, cmap, base, extra=None, months=None, central_lon=0, name="animation"):
+  def make_animation(self, years, months, vmin, vmax, cmap, base, extra=None, central_lon=0, name="animation"):
     movie_data = self.get_data_slides(base, extra)
 
     if "time" not in movie_data.dims:
