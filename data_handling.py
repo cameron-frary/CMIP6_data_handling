@@ -410,19 +410,19 @@ class generator:
       else:
         months = [month]
       
-      for month in months:
-        frame_data = movie_data.sel(time=f"{year}-{month}")    
+      for loop_month in months:
+        frame_data = movie_data.sel(time=f"{year}-{loop_month}")    
         p = generate_map_plot(
             data=frame_data,
             cmap=cmap,  # color mapping from parameters
-            title=f"{year}-{month}",  # make sure to change title to what you want,
+            title=f"{year}-{loop_month}",  # make sure to change title to what you want,
             central_lon=central_lon,
             vmin=vmin,
             vmax=vmax
         )
         plt.close()
-        p.savefig(f'/content/temp_images/{year}-{month}.png')
-        frames.append(cv2.imread(f'/content/temp_images/{year}-{month}.png'))
+        p.savefig(f'/content/temp_images/{year}-{loop_month}.png')
+        frames.append(cv2.imread(f'/content/temp_images/{year}-{loop_month}.png'))
 
     height,width,layers=frames[1].shape
 
