@@ -338,7 +338,7 @@ class generator:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
 
     if experiment1 is not None and variable1 is not None and time1 is not None:
-      data_processed1 = get_data_frame(base=extra)
+      data_processed1 = self.get_data_frame(base=extra)
       print((data_processed1 - data_processed).values)
       # return data_processed1 - data_processed
     
