@@ -411,6 +411,7 @@ class generator:
         months = [month]
       
       for loop_month in months:
+        print(f"{year}-{loop_month}")
         frame_data = movie_data.sel(time=f"{year}-{loop_month}")    
         p = generate_map_plot(
             data=frame_data,
