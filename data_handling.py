@@ -249,8 +249,18 @@ class generator:
   def set_lev(self, lev):
     self.lev = lev
 
-  def get_data_frame(self, experiment, variable, time):
+  def get_data_frame(self, time, base, extra = None):
     # return self.dt[experiment][variable]
+
+    experiment, variable = base
+    experiment1 = None
+    variable1 = None
+    if extra not None:
+      try:
+        experiment1, variable1 = extra
+      except TypeError:
+        raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (experiment, variable) format.")
+
     
     data_processed = self.dt[experiment][variable].ds[variable].sel(time=time).squeeze()
 
@@ -263,7 +273,20 @@ class generator:
         data_processed = data_processed.sel(lev=self.lev, method='nearest').squeeze()
         if len(data_processed.dims) > 2:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
+    
+    if experiment1 not None and variable1 not None:
+      data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=time).squeeze()
 
+      if len(data_processed1.dims) > 2:
+        if self.lev is None:
+          raise Exception(f"Too many dimensions: {data_processed.dims}. Specify more!")
+        else:
+          data_processed1 = data_processed1.sel(lev=self.lev, method='nearest').squeeze()
+          if len(data_processed1.dims) > 2:
+            raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed1.dims}")
+
+      return data_processed - data_processed1
+    
     return data_processed
 
   def get_data_slides(self, experiment, variable):
@@ -280,12 +303,49 @@ class generator:
 
     return data_processed
 
-  def make_plot(self, time, cmap, title, central_lon=0, vmin=None, vmax=None):
+  def get_data_slides(self, base, extra=None):
+
+    experiment, variable = base
+    experiment1 = None
+    variable1 = None
+    if combo1 not None:
+      try:
+        experiment1, variable1 = extra
+      except TypeError:
+        raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (experiment, variable) format.")
+
+    data_processed = self.dt[experiment][variable].ds[variable].squeeze()
+
+    if len(data_processed.dims) > 3:
+      if self.lev is None:
+        raise Exception(f"Too many dimensions: {data_processed.dims}. Expected time, x, y")
+      else:
+        data_processed = self.dt[experiment][variable].sel(lev=self.lev, method='nearest').squeeze()
+        if len(data_processed.dims) > 3:
+          raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
+
+    if experiment1 not None and variable1 not None:
+      data_processed1 = self.dt[experiment1][variable1].ds[variable1].squeeze()
+
+      if len(data_processed1.dims) > 3:
+        if self.lev is None:
+          raise Exception(f"Too many dimensions: {data_processed1.dims}. Expected time, x, y")
+        else:
+          data_processed1 = self.dt[experiment1][variable1].sel(lev=self.lev, method='nearest').squeeze()
+          if len(data_processed1.dims) > 3:
+            raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed1.dims}")
+
+      return data_processed - data_processed1
+    
+    return data_processed
+
+  def make_plot(self, time, cmap, title, base, extra=None, central_lon=0, vmin=None, vmax=None):
+    
     fig, ax = plt.subplots(
       ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
     )
 
-    data = self.get_data_frame(time)
+    data = self.get_data_frame(time, base, extra)
     try:
       p = data.plot(
         ax=ax,
@@ -317,8 +377,8 @@ class generator:
 
     return fig
 
-  def make_animation(self, years, month, vmin, vmax, cmap, central_lon=0, name="animation"):
-    movie_data = self.get_data_slides()
+  def make_animation(self, years, vmin, vmax, cmap, base, extra=None, month=None, central_lon=0, name="animation"):
+    movie_data = self.get_data_slides(base, extra)
 
     if "time" not in movie_data.dims:
       raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
@@ -331,7 +391,11 @@ class generator:
     frames = []
 
     for year in years:  # years from parameters
-      frame_data = movie_data.sel(time=f"{year}-{month}")
+      if month is None:
+        frame_data = movie_data.sel(time=slice(f"{year}-01", f"{year}-12")).mean(dim="time")
+      else:
+        frame_data = movie_data.sel(time=f"{year}-{month}")
+      
       p = generate_map_plot(
           data=frame_data,
           cmap=cmap,  # color mapping from parameters
