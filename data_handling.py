@@ -398,13 +398,13 @@ class generator:
     for year in years:  # years from parameters
       if len(months) == 0:
         p = self.make_plot(
-            cmap=cmap,  # color mapping from parameters
-            title=f"Average for {year}",  # make sure to change title to what you want
-            main = ("", main_exp, main_var),
-            baseline = baseline,
-            central_lon=central_lon,
-            vmin=vmin,
-            vmax=vmax
+          cmap=cmap,  # color mapping from parameters
+          title=f"Average for {year}",  # make sure to change title to what you want
+          main = ("", main_exp, main_var),
+          baseline = baseline,
+          central_lon=central_lon,
+          vmin=vmin,
+          vmax=vmax
         )
         plt.close()
         p.savefig(f'/content/temp_images/{year}.png')
@@ -416,13 +416,13 @@ class generator:
           frame_data = self.get_data_frame(
           )
           p = self.generate_map_plot
-              cmap=cmap,  # color mapping from parameters
-              title=f"{year}-{month:02d}",  # make sure to change title to what you want,
-              main = (f"{year}-{month:02d}", main_exp, main_var),
-              baseline = baseline
-              central_lon=central_lon,
-              vmin=vmin,
-              vmax=vmax
+            cmap=cmap,  # color mapping from parameters
+            title=f"{year}-{month:02d}",  # make sure to change title to what you want,
+            main = (f"{year}-{month:02d}", main_exp, main_var),
+            baseline = baseline,
+            central_lon=central_lon,
+            vmin=vmin,
+            vmax=vmax
           )
           plt.close()
           p.savefig(f'/content/temp_images/{year}-{month:02d}.png')
