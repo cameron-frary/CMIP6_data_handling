@@ -363,7 +363,7 @@ class generator:
     ax.coastlines()
     ax.coastlines(color="grey", lw=0.5) #parameters for the lines on the coasts
 
-    ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())
+    ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
     ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
       
     for lat in [-90, -60, -30, 0, 30, 60, 90]:
