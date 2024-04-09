@@ -251,16 +251,16 @@ class generator:
   def set_lev(self, lev):
     self.lev = lev
 
-  def get_data_frame(self, base, extra = None):
+  def get_data_frame(self, main, baseline = None):
     # return self.dt[experiment][variable]
 
-    time, experiment, variable = base
+    time, experiment, variable = main
     time1 = None
     experiment1 = None
     variable1 = None
-    if extra is not None:
+    if baseline is not None:
       try:
-        time1, experiment1, variable1 = extra
+        time1, experiment1, variable1 = baseline
       except TypeError:
         raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (time, experiment, variable) format.")
 
@@ -315,15 +315,15 @@ class generator:
 
     return data_processed
 
-  def get_data_slides(self, base, extra=None):
+  def get_data_slides(self, main, baseline=None):
 
-    time, experiment, variable = base
+    time, experiment, variable = main
     time1 = None
     experiment1 = None
     variable1 = None
-    if extra is not None:
+    if baseline is not None:
       try:
-        time1, experiment1, variable1 = extra
+        time1, experiment1, variable1 = baseline
       except TypeError:
         raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (experiment, variable) format.")
 
@@ -338,19 +338,19 @@ class generator:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
 
     if experiment1 is not None and variable1 is not None and time1 is not None:
-      data_processed1 = self.get_data_frame(base=extra)
+      data_processed1 = self.get_data_frame(main=baseline)
       # print((data_processed1 - data_processed).values)
       return data_processed1 - data_processed
     
     return data_processed
 
-  def make_plot(self, cmap, title, base, extra=None, central_lon=0, vmin=None, vmax=None):
+  def make_plot(self, cmap, title, main, baseline=None, central_lon=0, vmin=None, vmax=None):
     
     fig, ax = plt.subplots(
       ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
     )
 
-    data = self.get_data_frame(base, extra)
+    data = self.get_data_frame(main, baseline)
     
     try:
       p = data.plot(
@@ -385,8 +385,8 @@ class generator:
 
     return fig
 
-  def make_animation(self, years, months, vmin, vmax, cmap, base, extra=None, central_lon=0, name="animation"):
-    movie_data = self.get_data_slides(base, extra)
+  def make_animation(self, years, months, vmin, vmax, cmap, main, baseline=None, central_lon=0, name="animation"):
+    movie_data = self.get_data_slides(main, baseline)
     
     if "time" not in movie_data.dims:
       raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
