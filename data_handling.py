@@ -355,6 +355,10 @@ class generator:
 
       print(data_processed1["time"].values)
       print(data_processed["time"].values)
+
+      print((data_processed1 - data_processed).values)
+      quit()
+      
       return data_processed1 - data_processed
     
     return data_processed
