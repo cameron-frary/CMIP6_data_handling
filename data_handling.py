@@ -338,27 +338,7 @@ class generator:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
 
     if experiment1 is not None and variable1 is not None and time1 is not None:
-      data_processed1 = self.dt[experiment1][variable1].ds[variable1].squeeze()
-
-      if len(data_processed1.dims) > 3:
-        if self.lev is None:
-          raise Exception(f"Too many dimensions: {data_processed1.dims}. Expected time, x, y")
-        else:
-          data_processed1 = self.dt[experiment1][variable1].sel(lev=self.lev, method='nearest').squeeze()
-          if len(data_processed1.dims) > 3:
-            raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed1.dims}")
-
-      if len(time) == 4:
-        data_processed1 = data_processed1.sel(time=slice(f"{time}-01", f"{time}-12")).mean(dim="time")
-      elif len(time) == 7:
-        data_processed1 = data_processed1.sel(time=time)
-
-      print(data_processed1["time"].values)
-      print(data_processed["time"].values)
-
-      print((data_processed1 - data_processed).values)
-      quit()
-      
+      data_processed1 = get_data_frame(base=extra)
       return data_processed1 - data_processed
     
     return data_processed
