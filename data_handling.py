@@ -386,21 +386,21 @@ class generator:
     return fig
 
   def make_animation(self, years, months, vmin, vmax, cmap, main, baseline=None, central_lon=0, name="animation"):
-    movie_data = self.get_data_slides(main, baseline)
-    
-    if "time" not in movie_data.dims:
-      raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
-
     #!rm -r -f "/content/temp_images"
     #!mkdir -p "/content/temp_images"
     os.system("rm -r -f '/content/temp_images'")
     os.system("mkdir -p '/content/temp_images'")
 
     frames = []
+
+    main_time, main_exp, main_var = main
     
     for year in years:  # years from parameters
       if len(months) == 0:
-        frame_data = movie_data.sel(time=slice(f"{year}-01", f"{year}-12")).mean(dim="time")
+        frame_data = self.get_data_frame(
+          main = ("", main_exp, main_var),
+          baseline = baseline
+        )
         p = generate_map_plot(
             data=frame_data,
             cmap=cmap,  # color mapping from parameters
@@ -416,7 +416,10 @@ class generator:
       else:
         for month in months:
           print(f"{year}-{month:02d}")
-          frame_data = movie_data.sel(time=f"{year}-{month:02d}")    
+          frame_data = self.get_data_frame(
+            main = (f"{year}-{month:02d}", main_exp, main_var),
+            baseline = baseline
+          )
           p = generate_map_plot(
               data=frame_data,
               cmap=cmap,  # color mapping from parameters
@@ -443,4 +446,64 @@ class generator:
 
     cv2.destroyAllWindows()
     video.release()
+
+    # def make_animation(self, years, months, vmin, vmax, cmap, main, baseline=None, central_lon=0, name="animation"):
+    # movie_data = self.get_data_slides(main, baseline)
+    
+    # if "time" not in movie_data.dims:
+    #   raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
+
+    # #!rm -r -f "/content/temp_images"
+    # #!mkdir -p "/content/temp_images"
+    # os.system("rm -r -f '/content/temp_images'")
+    # os.system("mkdir -p '/content/temp_images'")
+
+    # frames = []
+    
+    # for year in years:  # years from parameters
+    #   if len(months) == 0:
+    #     frame_data = movie_data.sel(time=slice(f"{year}-01", f"{year}-12")).mean(dim="time")
+    #     p = generate_map_plot(
+    #         data=frame_data,
+    #         cmap=cmap,  # color mapping from parameters
+    #         title=f"Average for {year}",  # make sure to change title to what you want,
+    #         central_lon=central_lon,
+    #         vmin=vmin,
+    #         vmax=vmax
+    #     )
+    #     plt.close()
+    #     p.savefig(f'/content/temp_images/{year}.png')
+    #     frames.append(cv2.imread(f'/content/temp_images/{year}.png'))
+
+    #   else:
+    #     for month in months:
+    #       print(f"{year}-{month:02d}")
+    #       frame_data = movie_data.sel(time=f"{year}-{month:02d}")    
+    #       p = generate_map_plot(
+    #           data=frame_data,
+    #           cmap=cmap,  # color mapping from parameters
+    #           title=f"{year}-{month:02d}",  # make sure to change title to what you want,
+    #           central_lon=central_lon,
+    #           vmin=vmin,
+    #           vmax=vmax
+    #       )
+    #       plt.close()
+    #       p.savefig(f'/content/temp_images/{year}-{month:02d}.png')
+    #       frames.append(cv2.imread(f'/content/temp_images/{year}-{month:02d}.png'))
+
+    # height,width,layers=frames[1].shape
+
+    # video=cv2.VideoWriter(
+    #     f'/content/{name}.mp4',
+    #     cv2.VideoWriter.fourcc(*"mp4v"),
+    #     6, # fps
+    #     (width,height)
+    # )
+
+    # for frame in frames:
+    #     video.write(frame)
+
+    # cv2.destroyAllWindows()
+    # video.release()
+
 
