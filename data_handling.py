@@ -415,7 +415,7 @@ class generator:
           print(f"{year}-{month:02d}")
           frame_data = self.get_data_frame(
           )
-          p = self.generate_map_plot
+          p = self.generate_map_plot(
             cmap=cmap,  # color mapping from parameters
             title=f"{year}-{month:02d}",  # make sure to change title to what you want,
             main = (f"{year}-{month:02d}", main_exp, main_var),
