@@ -296,7 +296,7 @@ class generator:
           if len(data_processed1.dims) > 2:
             raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed1.dims}")
 
-      return data_processed - data_processed1
+      return data_processed1 - data_processed
     
     return data_processed
 
@@ -346,7 +346,7 @@ class generator:
           if len(data_processed1.dims) > 3:
             raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed1.dims}")
 
-      return data_processed - data_processed1
+      return data_processed1 - data_processed
     
     return data_processed
 
