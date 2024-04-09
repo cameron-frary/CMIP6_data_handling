@@ -268,7 +268,7 @@ class generator:
     elif len(time) == 4:
       data_processed = self.dt[experiment][variable].ds[variable].sel(time=slice(f"{time}-01", f"{time}-12").mean(dim="time").squeeze()
     else:
-      raise Expception("Time input format matches neither 'YYYY' or 'YYYY-MM' (length {len(time)})") 
+      raise Exception("Time input format matches neither 'YYYY' or 'YYYY-MM' (length {len(time)})") 
 
     # print(data_processed)
 
