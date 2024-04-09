@@ -405,7 +405,7 @@ class generator:
     frames = []
     
     for year in years:  # years from parameters
-      if len(months) = 0:
+      if len(months) == 0:
         frame_data = movie_data.sel(time=slice(f"{year}-01", f"{year}-12").mean(dim="time")
         p = generate_map_plot(
             data=frame_data,
