@@ -112,12 +112,13 @@ def generate_map_plot(data, cmap, title, central_lon=0, vmin=None, vmax=None):
 
   for lat in [-90, -60, -30, 0, 30, 60, 90]:
       ax.axhline(lat,color='k',ls='--')
-    
-  ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())
-  ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
   
   lon_formatter = LongitudeFormatter(zero_direction_label=True)
+  ax.xaxis.set_major_formatter(lon_formatter)
   lat_formatter = LatitudeFormatter()
+
+  ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
+  ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
 
   ax.add_feature(cart.feature.LAND, zorder=100, edgecolor="k")
   ax.set_title(title) # set a title
@@ -362,15 +363,16 @@ class generator:
 
     ax.coastlines()
     ax.coastlines(color="grey", lw=0.5) #parameters for the lines on the coasts
-
-    ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
-    ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
       
     for lat in [-90, -60, -30, 0, 30, 60, 90]:
       ax.axhline(lat,color='k',ls='--')
     
     lon_formatter = LongitudeFormatter(zero_direction_label=True)
+    ax.xaxis.set_major_formatter(lon_formatter)
     lat_formatter = LatitudeFormatter()
+  
+    ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
+    ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
 
     ax.add_feature(cart.feature.LAND, zorder=100, edgecolor="k")
     ax.set_title(title) # set a title
