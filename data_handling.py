@@ -405,20 +405,35 @@ class generator:
     frames = []
     
     for year in years:  # years from parameters
-      for month in months:
-        print(f"{year}-{month:02d}")
-        frame_data = movie_data.sel(time=f"{year}-{month:02d}")    
+      if len(months) = 0:
+        frame_data = movie_data.sel(time=slice(f"{year}-01", f"{year}-12").mean(dim="time")
         p = generate_map_plot(
             data=frame_data,
             cmap=cmap,  # color mapping from parameters
-            title=f"{year}-{month:02d}",  # make sure to change title to what you want,
+            title=f"Average for {year}",  # make sure to change title to what you want,
             central_lon=central_lon,
             vmin=vmin,
             vmax=vmax
         )
         plt.close()
-        p.savefig(f'/content/temp_images/{year}-{month:02d}.png')
-        frames.append(cv2.imread(f'/content/temp_images/{year}-{month:02d}.png'))
+        p.savefig(f'/content/temp_images/{year}.png')
+        frames.append(cv2.imread(f'/content/temp_images/{year}.png'))
+
+      else:
+        for month in months:
+          print(f"{year}-{month:02d}")
+          frame_data = movie_data.sel(time=f"{year}-{month:02d}")    
+          p = generate_map_plot(
+              data=frame_data,
+              cmap=cmap,  # color mapping from parameters
+              title=f"{year}-{month:02d}",  # make sure to change title to what you want,
+              central_lon=central_lon,
+              vmin=vmin,
+              vmax=vmax
+          )
+          plt.close()
+          p.savefig(f'/content/temp_images/{year}-{month:02d}.png')
+          frames.append(cv2.imread(f'/content/temp_images/{year}-{month:02d}.png'))
 
     height,width,layers=frames[1].shape
 
