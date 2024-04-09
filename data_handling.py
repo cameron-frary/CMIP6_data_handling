@@ -323,7 +323,7 @@ class generator:
     variable1 = None
     if extra is not None:
       try:
-        experiment1, variable1 = extra
+        time1, experiment1, variable1 = extra
       except TypeError:
         raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (experiment, variable) format.")
 
