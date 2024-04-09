@@ -391,7 +391,7 @@ class generator:
 
     return fig
 
-  def make_animation(self, years, vmin, vmax, cmap, base, extra=None, month=None, central_lon=0, name="animation"):
+  def make_animation(self, years, vmin, vmax, cmap, base, extra=None, months=None, central_lon=0, name="animation"):
     movie_data = self.get_data_slides(base, extra)
 
     if "time" not in movie_data.dims:
@@ -403,32 +403,22 @@ class generator:
     os.system("mkdir -p '/content/temp_images'")
 
     frames = []
-
+    
     for year in years:  # years from parameters
-      if month is None:
-        months = range(1,13)
-      else:
-        months = [month]
-
-      print(months)
-      for loop_month in months:
-        print("Hi")
-        print(year)
-        print(loop_month)
-        print(f"{year}-{loop_month:02d}")
-        print("Hello world")
-        frame_data = movie_data.sel(time=f"{year}-{loop_month:02d}")    
+      for month in months:
+        print(f"{year}-{month:02d}")
+        frame_data = movie_data.sel(time=f"{year}-{month:02d}")    
         p = generate_map_plot(
             data=frame_data,
             cmap=cmap,  # color mapping from parameters
-            title=f"{year}-{loop_month:02d}",  # make sure to change title to what you want,
+            title=f"{year}-{month:02d}",  # make sure to change title to what you want,
             central_lon=central_lon,
             vmin=vmin,
             vmax=vmax
         )
         plt.close()
-        p.savefig(f'/content/temp_images/{year}-{loop_month:02d}.png')
-        frames.append(cv2.imread(f'/content/temp_images/{year}-{loop_month:02d}.png'))
+        p.savefig(f'/content/temp_images/{year}-{month:02d}.png')
+        frames.append(cv2.imread(f'/content/temp_images/{year}-{month:02d}.png'))
 
     height,width,layers=frames[1].shape
 
