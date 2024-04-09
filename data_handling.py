@@ -116,6 +116,7 @@ def generate_map_plot(data, cmap, title, central_lon=0, vmin=None, vmax=None):
   lon_formatter = LongitudeFormatter(zero_direction_label=True)
   ax.xaxis.set_major_formatter(lon_formatter)
   lat_formatter = LatitudeFormatter()
+  ax.yaxis.set_major_formatter(lat_formatter)
 
   ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
   ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
@@ -370,6 +371,7 @@ class generator:
     lon_formatter = LongitudeFormatter(zero_direction_label=True)
     ax.xaxis.set_major_formatter(lon_formatter)
     lat_formatter = LatitudeFormatter()
+    ax.yaxis.set_major_formatter(lat_formatter)
   
     ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
     ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
