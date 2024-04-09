@@ -48,153 +48,153 @@ kwargs = dict(
 )
 
 
-def get_frame_data(query, time, col=col, kwargs=kwargs, lev=None):
-  cat = col.search(
-      **query,
-      require_all_on=[
-        "source_id"
-      ],  # make sure that we only get models which have all of the above experiments
-  )
+# def get_frame_data(query, time, col=col, kwargs=kwargs, lev=None):
+#   cat = col.search(
+#       **query,
+#       require_all_on=[
+#         "source_id"
+#       ],  # make sure that we only get models which have all of the above experiments
+#   )
 
-  print(len(cat))
+#   print(len(cat))
 
-  if len(cat) > 1:
-    print("Returned too many runs. Here is output:")
-    print(f"source_ids: {cat.df['source_id'].unique()}")
-    print(f"variable_ids: {cat.df['variable_id'].unique()}")
-    print(f"member_ids: {cat.df['member_id'].unique()}")
-    print(f"table_ids: {cat.df['table_id'].unique()}")
-    print(f"grid_labels: {cat.df['grid_label'].unique()}")
-    print(f"experiment_ids: {cat.df['experiment_id'].unique()}")
-    raise Exception(f"Query returned {len(cat)} different runs")
+#   if len(cat) > 1:
+#     print("Returned too many runs. Here is output:")
+#     print(f"source_ids: {cat.df['source_id'].unique()}")
+#     print(f"variable_ids: {cat.df['variable_id'].unique()}")
+#     print(f"member_ids: {cat.df['member_id'].unique()}")
+#     print(f"table_ids: {cat.df['table_id'].unique()}")
+#     print(f"grid_labels: {cat.df['grid_label'].unique()}")
+#     print(f"experiment_ids: {cat.df['experiment_id'].unique()}")
+#     raise Exception(f"Query returned {len(cat)} different runs")
 
-  if len(cat) == 0:
-    raise Exception(f"Query returned nothing")
+#   if len(cat) == 0:
+#     raise Exception(f"Query returned nothing")
 
-  cat.esmcat.aggregation_control.groupby_attrs = ["source_id", "experiment_id"]
-  dt = cat.to_datatree(**kwargs)
+#   cat.esmcat.aggregation_control.groupby_attrs = ["source_id", "experiment_id"]
+#   dt = cat.to_datatree(**kwargs)
 
-  data = dt[query["source_id"]][query["experiment_id"]].ds[query["variable_id"]]
+#   data = dt[query["source_id"]][query["experiment_id"]].ds[query["variable_id"]]
 
-  data_processed = data.sel(time=time).squeeze()
+#   data_processed = data.sel(time=time).squeeze()
 
-  if len(data_processed.dims) > 2:
-    if lev is None:
-      raise Exception(f"Too many dimensions: {data_processed.dims}. Specify more!")
-    else:
-      data_processed = data_processed.sel(lev=lev, method='nearest').squeeze()
-      if len(data_processed.dims) > 2:
-        raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
+#   if len(data_processed.dims) > 2:
+#     if lev is None:
+#       raise Exception(f"Too many dimensions: {data_processed.dims}. Specify more!")
+#     else:
+#       data_processed = data_processed.sel(lev=lev, method='nearest').squeeze()
+#       if len(data_processed.dims) > 2:
+#         raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
 
-  return data_processed
+#   return data_processed
 
-def generate_map_plot(data, cmap, title, central_lon=0, vmin=None, vmax=None):
-  fig, ax = plt.subplots(
-    ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
-  )
+# def generate_map_plot(data, cmap, title, central_lon=0, vmin=None, vmax=None):
+#   fig, ax = plt.subplots(
+#     ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
+#   )
 
-  try:
-    p = data.plot(
-      ax=ax,
-      vmin=vmin,
-      vmax=vmax,
-      x="lon",
-      y="lat",
-      transform=ccrs.PlateCarree(),
-      cmap=cmap,
-      robust=True,
-    )
-  except ValueError:
-    raise Exception("Use format 'cmocean.cm.[cmap name]' where cmap name is from https://matplotlib.org/cmocean/")
+#   try:
+#     p = data.plot(
+#       ax=ax,
+#       vmin=vmin,
+#       vmax=vmax,
+#       x="lon",
+#       y="lat",
+#       transform=ccrs.PlateCarree(),
+#       cmap=cmap,
+#       robust=True,
+#     )
+#   except ValueError:
+#     raise Exception("Use format 'cmocean.cm.[cmap name]' where cmap name is from https://matplotlib.org/cmocean/")
 
-  ax.coastlines()
-  ax.coastlines(color="grey", lw=0.5) #parameters for the lines on the coasts
+#   ax.coastlines()
+#   ax.coastlines(color="grey", lw=0.5) #parameters for the lines on the coasts
 
-  for lat in [-90, -60, -30, 0, 30, 60, 90]:
-      ax.axhline(lat,color='k',ls='--')
+#   for lat in [-90, -60, -30, 0, 30, 60, 90]:
+#       ax.axhline(lat,color='k',ls='--')
   
-  lon_formatter = LongitudeFormatter(zero_direction_label=True)
-  ax.xaxis.set_major_formatter(lon_formatter)
-  lat_formatter = LatitudeFormatter()
-  ax.yaxis.set_major_formatter(lat_formatter)
+#   lon_formatter = LongitudeFormatter(zero_direction_label=True)
+#   ax.xaxis.set_major_formatter(lon_formatter)
+#   lat_formatter = LatitudeFormatter()
+#   ax.yaxis.set_major_formatter(lat_formatter)
 
-  ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
-  ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
+#   ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
+#   ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
 
-  ax.add_feature(cart.feature.LAND, zorder=100, edgecolor="k")
-  ax.set_title(title) # set a title
+#   ax.add_feature(cart.feature.LAND, zorder=100, edgecolor="k")
+#   ax.set_title(title) # set a title
 
-  return fig
+#   return fig
 
-def get_movie_data(query, time, col=col, kwargs=kwargs, lev=None):
-  cat = col.search(
-      **query,
-      require_all_on=[
-        "source_id"
-      ],  # make sure that we only get models which have all of the above experiments
-  )
+# def get_movie_data(query, time, col=col, kwargs=kwargs, lev=None):
+#   cat = col.search(
+#       **query,
+#       require_all_on=[
+#         "source_id"
+#       ],  # make sure that we only get models which have all of the above experiments
+#   )
 
-  print(len(cat))
+#   print(len(cat))
 
-  if len(cat) > 1:
-    raise Exception(f"Query returned {len(cat)} different runs")
+#   if len(cat) > 1:
+#     raise Exception(f"Query returned {len(cat)} different runs")
 
-  if len(cat) == 0:
-    raise Exception(f"Query returned nothing")
+#   if len(cat) == 0:
+#     raise Exception(f"Query returned nothing")
 
-  cat.esmcat.aggregation_control.groupby_attrs = ["source_id", "experiment_id"]
-  dt = cat.to_datatree(**kwargs)
+#   cat.esmcat.aggregation_control.groupby_attrs = ["source_id", "experiment_id"]
+#   dt = cat.to_datatree(**kwargs)
 
-  data = dt[query["source_id"]][query["experiment_id"]].ds[query["variable_id"]]
+#   data = dt[query["source_id"]][query["experiment_id"]].ds[query["variable_id"]]
 
-  if len(data.dims) > 3:
-    if lev is None:
-      raise Exception(f"Too many dimensions: {data.dims}. Expected time, x, y")
-    else:
-      data_processed = data.sel(lev=lev, method='nearest').squeeze()
-      if len(data_processed.dims) > 3:
-        raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
+#   if len(data.dims) > 3:
+#     if lev is None:
+#       raise Exception(f"Too many dimensions: {data.dims}. Expected time, x, y")
+#     else:
+#       data_processed = data.sel(lev=lev, method='nearest').squeeze()
+#       if len(data_processed.dims) > 3:
+#         raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
 
-  return data_processed
+#   return data_processed
 
-def make_movie(movie_data, years, month, cmap, vmin, vmax, central_lon=0, name="animation"):
+# def make_movie(movie_data, years, month, cmap, vmin, vmax, central_lon=0, name="animation"):
 
-  if "time" not in movie_data.dims:
-    raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
+#   if "time" not in movie_data.dims:
+#     raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
 
-  os.system("rm -r -f '/content/temp_images'")
-  os.system("mkdir -p '/content/temp_images'")
+#   os.system("rm -r -f '/content/temp_images'")
+#   os.system("mkdir -p '/content/temp_images'")
 
-  frames = []
+#   frames = []
 
-  for year in years:  # years from parameters
-    frame_data = movie_data.sel(time=f"{year}-{month}")
-    p = generate_map_plot(
-        data=frame_data,
-        cmap=cmap,  # color mapping from parameters
-        title=year,  # make sure to change title to what you want,
-        central_lon=central_lon,
-        vmin=vmin,
-        vmax=vmax,
-    )
-    plt.close()
-    p.savefig(f'/content/temp_images/{year}.png')
-    frames.append(cv2.imread(f'/content/temp_images/{year}.png'))
+#   for year in years:  # years from parameters
+#     frame_data = movie_data.sel(time=f"{year}-{month}")
+#     p = generate_map_plot(
+#         data=frame_data,
+#         cmap=cmap,  # color mapping from parameters
+#         title=year,  # make sure to change title to what you want,
+#         central_lon=central_lon,
+#         vmin=vmin,
+#         vmax=vmax,
+#     )
+#     plt.close()
+#     p.savefig(f'/content/temp_images/{year}.png')
+#     frames.append(cv2.imread(f'/content/temp_images/{year}.png'))
 
-  height,width,layers=frames[1].shape
+#   height,width,layers=frames[1].shape
 
-  video=cv2.VideoWriter(
-      f'/content/{name}.mp4',
-      cv2.VideoWriter.fourcc(*"mp4v"),  # remind cameron to fix encoding from MJPG
-      6, # fps
-      (width,height)
-  )
+#   video=cv2.VideoWriter(
+#       f'/content/{name}.mp4',
+#       cv2.VideoWriter.fourcc(*"mp4v"),  # remind cameron to fix encoding from MJPG
+#       6, # fps
+#       (width,height)
+#   )
 
-  for frame in frames:
-      video.write(frame)
+#   for frame in frames:
+#       video.write(frame)
 
-  cv2.destroyAllWindows()
-  video.release()
+#   cv2.destroyAllWindows()
+#   video.release()
 
 class generator:
   def __init__(self, query, lev=None):
