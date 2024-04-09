@@ -339,9 +339,10 @@ class generator:
 
     if experiment1 is not None and variable1 is not None and time1 is not None:
       data_processed1 = get_data_frame(base=extra)
-      return data_processed1 - data_processed
+      print((data_processed1 - data_processed).values)
+      # return data_processed1 - data_processed
     
-    return data_processed
+    # return data_processed
 
   def make_plot(self, cmap, title, base, extra=None, central_lon=0, vmin=None, vmax=None):
     
