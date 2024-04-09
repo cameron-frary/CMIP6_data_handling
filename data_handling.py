@@ -406,21 +406,23 @@ class generator:
 
     for year in years:  # years from parameters
       if month is None:
-        frame_data = movie_data.sel(time=slice(f"{year}-01", f"{year}-12")).mean(dim="time")
+        months = range(1,13)
       else:
-        frame_data = movie_data.sel(time=f"{year}-{month}")
+        months = [month]
       
-      p = generate_map_plot(
-          data=frame_data,
-          cmap=cmap,  # color mapping from parameters
-          title=year,  # make sure to change title to what you want,
-          central_lon=central_lon,
-          vmin=vmin,
-          vmax=vmax
-      )
-      plt.close()
-      p.savefig(f'/content/temp_images/{year}.png')
-      frames.append(cv2.imread(f'/content/temp_images/{year}.png'))
+      for month in months:
+        frame_data = movie_data.sel(time=f"{year}-{month}")    
+        p = generate_map_plot(
+            data=frame_data,
+            cmap=cmap,  # color mapping from parameters
+            title=f"{year}-{month}",  # make sure to change title to what you want,
+            central_lon=central_lon,
+            vmin=vmin,
+            vmax=vmax
+        )
+        plt.close()
+        p.savefig(f'/content/temp_images/{year}-{month}.png')
+        frames.append(cv2.imread(f'/content/temp_images/{year}-{month}.png'))
 
     height,width,layers=frames[1].shape
 
