@@ -319,7 +319,7 @@ class generator:
     experiment, variable = base
     experiment1 = None
     variable1 = None
-    if combo1 is not None:
+    if extra is not None:
       try:
         experiment1, variable1 = extra
       except TypeError:
