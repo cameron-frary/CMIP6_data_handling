@@ -255,7 +255,7 @@ class generator:
     experiment, variable = base
     experiment1 = None
     variable1 = None
-    if extra not None:
+    if extra is not None:
       try:
         experiment1, variable1 = extra
       except TypeError:
@@ -274,7 +274,7 @@ class generator:
         if len(data_processed.dims) > 2:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
     
-    if experiment1 not None and variable1 not None:
+    if experiment1 is not None and variable1 is not None:
       data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=time).squeeze()
 
       if len(data_processed1.dims) > 2:
@@ -308,7 +308,7 @@ class generator:
     experiment, variable = base
     experiment1 = None
     variable1 = None
-    if combo1 not None:
+    if combo1 is not None:
       try:
         experiment1, variable1 = extra
       except TypeError:
@@ -324,7 +324,7 @@ class generator:
         if len(data_processed.dims) > 3:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
 
-    if experiment1 not None and variable1 not None:
+    if experiment1 is not None and variable1 is not None:
       data_processed1 = self.dt[experiment1][variable1].ds[variable1].squeeze()
 
       if len(data_processed1.dims) > 3:
