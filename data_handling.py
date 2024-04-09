@@ -266,7 +266,7 @@ class generator:
     if len(time) == 7:
       data_processed = self.dt[experiment][variable].ds[variable].sel(time=time).squeeze()
     elif len(time) == 4:
-      data_processed = self.dt[experiment][variable].ds[variable].sel(time=time).mean(dim="time").squeeze()
+      data_processed = self.dt[experiment][variable].ds[variable].sel(time=slice(f"{time}-01", f"{time}-12").mean(dim="time").squeeze()
     else:
       raise Expception("Time input format matches neither 'YYYY' or 'YYYY-MM' (length {len(time)})") 
 
@@ -281,11 +281,16 @@ class generator:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
     
     if experiment1 is not None and variable1 is not None:
-      data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=time).squeeze()
+      if len(time) == 7:
+        data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=time).squeeze()
+      elif len(time) == 4:
+        data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=slice(f"{time}-01", f"{time}-12").mean(dim="time").squeeze()
+      else:
+        raise Expception("Time input format matches neither 'YYYY' or 'YYYY-MM' (length {len(time)})") 
 
       if len(data_processed1.dims) > 2:
         if self.lev is None:
-          raise Exception(f"Too many dimensions: {data_processed.dims}. Specify more!")
+          raise Exception(f"Too many dimensions: {data_processed1.dims}. Specify more!")
         else:
           data_processed1 = data_processed1.sel(lev=self.lev, method='nearest').squeeze()
           if len(data_processed1.dims) > 2:
