@@ -397,14 +397,11 @@ class generator:
     
     for year in years:  # years from parameters
       if len(months) == 0:
-        frame_data = self.get_data_frame(
-          main = ("", main_exp, main_var),
-          baseline = baseline
-        )
-        p = generate_map_plot(
-            data=frame_data,
+        p = self.make_plot(
             cmap=cmap,  # color mapping from parameters
-            title=f"Average for {year}",  # make sure to change title to what you want,
+            title=f"Average for {year}",  # make sure to change title to what you want
+            main = ("", main_exp, main_var),
+            baseline = baseline,
             central_lon=central_lon,
             vmin=vmin,
             vmax=vmax
@@ -417,13 +414,12 @@ class generator:
         for month in months:
           print(f"{year}-{month:02d}")
           frame_data = self.get_data_frame(
-            main = (f"{year}-{month:02d}", main_exp, main_var),
-            baseline = baseline
           )
-          p = generate_map_plot(
-              data=frame_data,
+          p = self.generate_map_plot
               cmap=cmap,  # color mapping from parameters
               title=f"{year}-{month:02d}",  # make sure to change title to what you want,
+              main = (f"{year}-{month:02d}", main_exp, main_var),
+              baseline = baseline
               central_lon=central_lon,
               vmin=vmin,
               vmax=vmax
