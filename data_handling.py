@@ -263,8 +263,12 @@ class generator:
       except TypeError:
         raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (experiment, variable) format.")
 
-    
-    data_processed = self.dt[experiment][variable].ds[variable].sel(time=time).squeeze()
+    if len(time) == 7:
+      data_processed = self.dt[experiment][variable].ds[variable].sel(time=time).squeeze()
+    elif len(time) == 4:
+      data_processed = self.dt[experiment][variable].ds[variable].sel(time=time).mean(dim="time").squeeze()
+    else:
+      raise Expception("Time input format matches neither 'YYYY' or 'YYYY-MM' (length {len(time)})") 
 
     # print(data_processed)
 
@@ -348,6 +352,7 @@ class generator:
     )
 
     data = self.get_data_frame(time, base, extra)
+    
     try:
       p = data.plot(
         ax=ax,
