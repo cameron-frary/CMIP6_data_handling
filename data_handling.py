@@ -251,17 +251,18 @@ class generator:
   def set_lev(self, lev):
     self.lev = lev
 
-  def get_data_frame(self, time, base, extra = None):
+  def get_data_frame(self, base, extra = None):
     # return self.dt[experiment][variable]
 
-    experiment, variable = base
+    time, experiment, variable = base
+    time1 = None
     experiment1 = None
     variable1 = None
     if extra is not None:
       try:
-        experiment1, variable1 = extra
+        time1, experiment1, variable1 = extra
       except TypeError:
-        raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (experiment, variable) format.")
+        raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (time, experiment, variable) format.")
 
     if len(time) == 7:
       data_processed = self.dt[experiment][variable].ds[variable].sel(time=time).squeeze()
@@ -280,13 +281,13 @@ class generator:
         if len(data_processed.dims) > 2:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
     
-    if experiment1 is not None and variable1 is not None:
-      if len(time) == 7:
-        data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=time).squeeze()
-      elif len(time) == 4:
-        data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=slice(f"{time}-01", f"{time}-12")).mean(dim="time").squeeze()
+    if experiment1 is not None and variable1 is not None and time1 is not None:
+      if len(time1) == 7:
+        data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=time1).squeeze()
+      elif len(time1) == 4:
+        data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=slice(f"{time1}-01", f"{time1}-12")).mean(dim="time").squeeze()
       else:
-        raise Expception("Time input format matches neither 'YYYY' or 'YYYY-MM' (length {len(time)})") 
+        raise Expception("Time input format matches neither 'YYYY' or 'YYYY-MM' (length {len(time1)})") 
 
       if len(data_processed1.dims) > 2:
         if self.lev is None:
@@ -316,7 +317,8 @@ class generator:
 
   def get_data_slides(self, base, extra=None):
 
-    experiment, variable = base
+    time, experiment, variable = base
+    time1 = None
     experiment1 = None
     variable1 = None
     if extra is not None:
@@ -335,7 +337,7 @@ class generator:
         if len(data_processed.dims) > 3:
           raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
 
-    if experiment1 is not None and variable1 is not None:
+    if experiment1 is not None and variable1 is not None and time1 is not None:
       data_processed1 = self.dt[experiment1][variable1].ds[variable1].squeeze()
 
       if len(data_processed1.dims) > 3:
@@ -346,17 +348,22 @@ class generator:
           if len(data_processed1.dims) > 3:
             raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed1.dims}")
 
+      if len(time) == 4:
+        data_processed1 = data_processed1.sel(time=slice(f"{time}-01", f"{time}-12")).mean(dim="time")
+      elif len(time) == 7:
+        data_processed1 = data_processed1.sel(time=time)
+
       return data_processed1 - data_processed
     
     return data_processed
 
-  def make_plot(self, time, cmap, title, base, extra=None, central_lon=0, vmin=None, vmax=None):
+  def make_plot(self, cmap, title, base, extra=None, central_lon=0, vmin=None, vmax=None):
     
     fig, ax = plt.subplots(
       ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
     )
 
-    data = self.get_data_frame(time, base, extra)
+    data = self.get_data_frame(base, extra)
     
     try:
       p = data.plot(
@@ -393,7 +400,7 @@ class generator:
 
   def make_animation(self, years, months, vmin, vmax, cmap, base, extra=None, central_lon=0, name="animation"):
     movie_data = self.get_data_slides(base, extra)
-
+    
     if "time" not in movie_data.dims:
       raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
 
