@@ -415,6 +415,7 @@ class generator:
         print("Hi")
         print(year)
         print(loop_month)
+        print(f"{year}-{loop_month}")
         print("Hello world")
         frame_data = movie_data.sel(time=f"{year}-{loop_month}")    
         p = generate_map_plot(
