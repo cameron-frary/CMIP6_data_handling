@@ -92,7 +92,7 @@ class CMIP6_Data_Manager:
 
         # If experiment is one of these two historical experiments, get average over
         # all years. Else, average over interval if given, or select specific time
-        if not slice and (experiment == "historical" or experiment == "land-hist"):
+        if not data_slice and (experiment == "historical" or experiment == "land-hist"):
             data = data.mean(dim="time").squeeze()
         elif len(time) == 1:
             data = data.sel(time=time[0]).squeeze()
