@@ -75,7 +75,19 @@ Optional:
 - `vmin`, `vmax` (default `None`): min and max values for the colormap, respectively. Default `None` allows the colormap to default to min and max values in the data
 - `block_land` (default `True`): Mask land. Setting it to `False` allows dynamics over land to be viewed.
 
-  
+Example usage **after specifying `model_id` from the initialization example**:
+```
+gfdl_esm4_pressure.make_plot(
+    title = "Sea level pressure \n Avg of 2061-2100  (ssp585) vs avg of 1975-2014 (hist)",
+    cmap = cmocean.cm.balance,
+    cmap_label = "Change as multiple of historical",
+    main = (["2061-07", "2100-07"], "ssp585", "ps"),
+    baseline = ([], "historical", "ps"),
+    central_lon = -105
+)
+```
+![download](https://github.com/cameron-frary/CMIP6_data_handling/assets/146021383/4fb7d082-fcfb-4fda-b0b1-f5f33a698081)
+
 
 #### `make_animation(self, years, months, vmin, vmax, cmap, main, cmap_label, baseline=None, central_lon=0, name="animation")`
 
@@ -95,6 +107,22 @@ Optional:
 - `baseline` (default `None`): parameters for baseline data for comparison with `main`. Should have the same format as main. Note that if the experiment is `historical` or `land-hist`, the time section can be an empty array, as the program will automatically average over all available historical data. Comparison data given by (main-baseline)/baseline. The only exception is if it has the format `("rolling", experiment, variable)`, where the `"rolling"` indicates that the comparison should be between experiments (or variables, I guess) for the same year. In my usage I exclusively used averaged historical data as the baseline.
 - `central_lon` (default `0`): central longitude of the plot. For example, `central_lon = -105` will center 105 degrees W for focus on the Pacific Ocean.
 - `name` (default `"animation"`): filename of the outputted `.mp4`.
+
+Example usage **after specifying `model_id` from the initialization example**:
+```
+gfdl_esm4_pressure.make_animation(
+    years = range(2090,2101),
+    months = [],
+    vmin = -2,
+    vmax = 2,
+    cmap = cmocean.cm.balance,
+    cmap_label = "Change as multiple of historical",
+    main = ([], "ssp585", "ps"),
+    baseline = ([], "historical", "ps"),
+    central_lon = -105,
+    name = "Pressure-animation"
+)
+```
 
 #### `get_data(self, main, baseline_params=None, data_slice=False)`
 
