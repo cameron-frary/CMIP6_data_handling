@@ -52,7 +52,7 @@ We see from the following output that a `table_id` was automatically chosen. Oth
 ****Using Amon as table_id (options were ['Amon' 'CFday' 'CFmon' 'AERmon' 'Emon'])****
 ```
 
-#### `make_plot(self, title, cmap_label, cmap, main, baseline=None, central_lon=0, vmin=None, vmax=None, block_land=True)
+#### `make_plot(self, title, cmap_label, cmap, main, baseline=None, central_lon=0, vmin=None, vmax=None, block_land=True)`
 
 Makes a plot (default 12 by 6, ccrs.PlateCarree projection).
 
@@ -70,7 +70,9 @@ Optional:
 - `vmin`, `vmax` (default `None`): min and max values for the colormap, respectively. Default `None` allows the colormap to default to min and max values in the data
 - `block_land` (default `True`): Mask land. Setting it to `False` allows dynamics over land to be viewed.
 
-#### make_animation(self, years, months, vmin, vmax, cmap, main, cmap_label, baseline=None, central_lon=0, name="animation")
+  
+
+#### `make_animation(self, years, months, vmin, vmax, cmap, main, cmap_label, baseline=None, central_lon=0, name="animation")`
 
 Generates a `.mp4` with filename `name` (default `animation.mp4`). 
 
