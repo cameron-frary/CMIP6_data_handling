@@ -20,5 +20,26 @@ This is the main object. It contains everything you need. The initialization fun
 
 - `query`: a dictionary containing fields to be passed to the CMIP6 search. Some common keys are `source_id` (model), `variable_id` (variable), `experiment_id` (experiment/forcing situation), and `table_id` (combination of part of model and time resolution). Values can be arrays. I highly recommend specifying at least the first three.
 - `time_frame` (default `None`): a string specifying desired time resolution. Examples include `"mon"`, `"day"`, or `"yr"`. Not strictly necessary, but helpful when `table_id` is not specified in `query`.
+- `specifics` (default `None`): a dictionary to specify additional dimensions, with the dimension name as the key and the desired value as the value (`{dim : val}`). Some variables will have a depth or altitude dimension (usually called `lev`). The dimension/key should be a string, and the val will usually be an integer.
+
+It can take a long time to unpack the returned data, so I suggest limiting the number of variable/experiment combinations possible. 
+
+In the following example usage, I query surface air pressure data (`ps`) from the GFDL-ESM4 model for the `historical` and `ssp585` experimental forcing situations. I want time resolution on the monthly scale, but I don't know the best table ID.
+```
+gfdl_esm4_pressure = CMIP6_Data_Manager(
+    query= dict(
+        source_id="GFDL-ESM4",
+        variable_id=["ps"],
+        experiment_id=["ssp585", "historical"]
+    ),
+    time_frame="mon"
+)
+```
+We see from the following output that a `table_id` was automatically chosen. Other possible `table_id`s are displayed in case you want to specify a `table_id` (here `CFmon` might be a good option as it seems to be coupled---it incorporates data from several parts of the model). 
+```
+****Using Amon as table_id (options were ['Amon' 'CFday' 'CFmon' 'AERmon' 'Emon'])****
+```
+
+
 
 #### 
