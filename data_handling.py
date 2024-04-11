@@ -89,6 +89,9 @@ class CMIP6_Data_Manager:
         self.specifics = specifics
 
     def sel_time(self, data, experiment, time, data_slice=False):
+        print(data_slice)
+        print(experiment)
+        print(experiment == "historical" or experiment == "land-hist")
 
         # If experiment is one of these two historical experiments, get average over
         # all years. Else, average over interval if given, or select specific time
