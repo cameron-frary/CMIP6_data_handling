@@ -1,503 +1,320 @@
-import numpy as np
-import xarray as xr
 import matplotlib.pyplot as plt
-import seaborn as sns
+import os
+import cv2
+
 import cartopy as cart
 import cartopy.crs as ccrs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
-import cmocean
-import pooch
-import os
-import tempfile
-import gsw
-import cv2
-
-import time
-
-tic = time.time()
 
 import intake
-import xarray as xr
-import xesmf as xe
-
 from xmip.preprocessing import combined_preprocessing
-# from xarrayutils.plotting import shaded_line_plot
 
-from datatree import DataTree
-from xmip.postprocessing import _parse_metric
 
-# @title Figure settings
-import ipywidgets as widgets  # interactive display
+class CMIP6_Data_Manager:
+    def __init__(self, query, time_frame=None, specifics=None):
+        if specifics is None:
+            specifics = {}
+        self.query = query
+        self.baseline_params = (None, None, None)
+        self.baseline_data = None
 
-plt.style.use(
-    "https://raw.githubusercontent.com/ClimateMatchAcademy/course-content/main/cma.mplstyle"
-)
-
-col = intake.open_esm_datastore(
-    "https://storage.googleapis.com/cmip6/pangeo-cmip6.json"
-)
-
-kwargs = dict(
-    preprocess=combined_preprocessing,  # apply xMIP fixes to each dataset
-    xarray_open_kwargs=dict(
-        use_cftime=True
-    ),  # ensure all datasets use the same time index
-    storage_options={
-        "token": "anon"
-    },  # anonymous/public authentication to google cloud storage
-)
-
-
-# def get_frame_data(query, time, col=col, kwargs=kwargs, lev=None):
-#   cat = col.search(
-#       **query,
-#       require_all_on=[
-#         "source_id"
-#       ],  # make sure that we only get models which have all of the above experiments
-#   )
-
-#   print(len(cat))
-
-#   if len(cat) > 1:
-#     print("Returned too many runs. Here is output:")
-#     print(f"source_ids: {cat.df['source_id'].unique()}")
-#     print(f"variable_ids: {cat.df['variable_id'].unique()}")
-#     print(f"member_ids: {cat.df['member_id'].unique()}")
-#     print(f"table_ids: {cat.df['table_id'].unique()}")
-#     print(f"grid_labels: {cat.df['grid_label'].unique()}")
-#     print(f"experiment_ids: {cat.df['experiment_id'].unique()}")
-#     raise Exception(f"Query returned {len(cat)} different runs")
-
-#   if len(cat) == 0:
-#     raise Exception(f"Query returned nothing")
-
-#   cat.esmcat.aggregation_control.groupby_attrs = ["source_id", "experiment_id"]
-#   dt = cat.to_datatree(**kwargs)
-
-#   data = dt[query["source_id"]][query["experiment_id"]].ds[query["variable_id"]]
-
-#   data_processed = data.sel(time=time).squeeze()
-
-#   if len(data_processed.dims) > 2:
-#     if lev is None:
-#       raise Exception(f"Too many dimensions: {data_processed.dims}. Specify more!")
-#     else:
-#       data_processed = data_processed.sel(lev=lev, method='nearest').squeeze()
-#       if len(data_processed.dims) > 2:
-#         raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
-
-#   return data_processed
-
-# def generate_map_plot(data, cmap, title, central_lon=0, vmin=None, vmax=None):
-#   fig, ax = plt.subplots(
-#     ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
-#   )
-
-#   try:
-#     p = data.plot(
-#       ax=ax,
-#       vmin=vmin,
-#       vmax=vmax,
-#       x="lon",
-#       y="lat",
-#       transform=ccrs.PlateCarree(),
-#       cmap=cmap,
-#       robust=True,
-#     )
-#   except ValueError:
-#     raise Exception("Use format 'cmocean.cm.[cmap name]' where cmap name is from https://matplotlib.org/cmocean/")
-
-#   ax.coastlines()
-#   ax.coastlines(color="grey", lw=0.5) #parameters for the lines on the coasts
-
-#   for lat in [-90, -60, -30, 0, 30, 60, 90]:
-#       ax.axhline(lat,color='k',ls='--')
-  
-#   lon_formatter = LongitudeFormatter(zero_direction_label=True)
-#   ax.xaxis.set_major_formatter(lon_formatter)
-#   lat_formatter = LatitudeFormatter()
-#   ax.yaxis.set_major_formatter(lat_formatter)
-
-#   ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
-#   ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
-
-#   ax.add_feature(cart.feature.LAND, zorder=100, edgecolor="k")
-#   ax.set_title(title) # set a title
-
-#   return fig
-
-# def get_movie_data(query, time, col=col, kwargs=kwargs, lev=None):
-#   cat = col.search(
-#       **query,
-#       require_all_on=[
-#         "source_id"
-#       ],  # make sure that we only get models which have all of the above experiments
-#   )
-
-#   print(len(cat))
-
-#   if len(cat) > 1:
-#     raise Exception(f"Query returned {len(cat)} different runs")
-
-#   if len(cat) == 0:
-#     raise Exception(f"Query returned nothing")
-
-#   cat.esmcat.aggregation_control.groupby_attrs = ["source_id", "experiment_id"]
-#   dt = cat.to_datatree(**kwargs)
-
-#   data = dt[query["source_id"]][query["experiment_id"]].ds[query["variable_id"]]
-
-#   if len(data.dims) > 3:
-#     if lev is None:
-#       raise Exception(f"Too many dimensions: {data.dims}. Expected time, x, y")
-#     else:
-#       data_processed = data.sel(lev=lev, method='nearest').squeeze()
-#       if len(data_processed.dims) > 3:
-#         raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
-
-#   return data_processed
-
-# def make_movie(movie_data, years, month, cmap, vmin, vmax, central_lon=0, name="animation"):
-
-#   if "time" not in movie_data.dims:
-#     raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
-
-#   os.system("rm -r -f '/content/temp_images'")
-#   os.system("mkdir -p '/content/temp_images'")
-
-#   frames = []
-
-#   for year in years:  # years from parameters
-#     frame_data = movie_data.sel(time=f"{year}-{month}")
-#     p = generate_map_plot(
-#         data=frame_data,
-#         cmap=cmap,  # color mapping from parameters
-#         title=year,  # make sure to change title to what you want,
-#         central_lon=central_lon,
-#         vmin=vmin,
-#         vmax=vmax,
-#     )
-#     plt.close()
-#     p.savefig(f'/content/temp_images/{year}.png')
-#     frames.append(cv2.imread(f'/content/temp_images/{year}.png'))
-
-#   height,width,layers=frames[1].shape
-
-#   video=cv2.VideoWriter(
-#       f'/content/{name}.mp4',
-#       cv2.VideoWriter.fourcc(*"mp4v"),  # remind cameron to fix encoding from MJPG
-#       6, # fps
-#       (width,height)
-#   )
-
-#   for frame in frames:
-#       video.write(frame)
-
-#   cv2.destroyAllWindows()
-#   video.release()
-
-class generator:
-  def __init__(self, query, lev=None):
-    self.query = query
-
-    plt.style.use(
-        "https://raw.githubusercontent.com/ClimateMatchAcademy/course-content/main/cma.mplstyle"
-    )
-
-    # %matplotlib inline
-
-    col = intake.open_esm_datastore(
-        "https://storage.googleapis.com/cmip6/pangeo-cmip6.json"
-    )
-
-    kwargs = dict(
-        preprocess=combined_preprocessing,  # apply xMIP fixes to each dataset
-        xarray_open_kwargs=dict(
-            use_cftime=True
-        ),  # ensure all datasets use the same time index
-        storage_options={
-            "token": "anon"
-        },  # anonymous/public authentication to google cloud storage
-    )
-
-    cat = col.search(
-          **self.query,
-          require_all_on=[
-            "source_id"
-          ],  # make sure that we only get models which have all of the above experiments
-      )
-
-    # if len(cat) > 1:
-    #   print("Returned too many runs. Here is the output:")
-    #   print("Returned too many runs. Here is output:")
-    #   print(f"source_ids: {cat.df['source_id'].unique()}")
-    #   print(f"variable_ids: {cat.df['variable_id'].unique()}")
-    #   print(f"member_ids: {cat.df['member_id'].unique()}")
-    #   print(f"table_ids: {cat.df['table_id'].unique()}")
-    #   print(f"grid_labels: {cat.df['grid_label'].unique()}")
-    #   print(f"experiment_ids: {cat.df['experiment_id'].unique()}")
-    #   raise Exception(f"Query returned {len(cat)} different runs")
-
-    if len(cat) == 0:
-      raise Exception(f"Query returned nothing")
-
-    cat.esmcat.aggregation_control.groupby_attrs = ["experiment_id","variable_id"]
-    self.dt = cat.to_datatree(**kwargs)
-
-    # self.data = dt[query["experiment_id"]][query["variable_id"]]
-    # self.cmap = cmap
-    self.lev = lev
-
-  def set_lev(self, lev):
-    self.lev = lev
-
-  def get_data_frame(self, main, baseline = None):
-    # return self.dt[experiment][variable]
-
-    time, experiment, variable = main
-    time1 = None
-    experiment1 = None
-    variable1 = None
-    if baseline is not None:
-      try:
-        time1, experiment1, variable1 = baseline
-      except TypeError:
-        raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (time, experiment, variable) format.")
-
-    if len(time) == 7:
-      data_processed = self.dt[experiment][variable].ds[variable].sel(time=time).squeeze()
-    elif len(time) == 4:
-      data_processed = self.dt[experiment][variable].ds[variable].sel(time=slice(f"{time}-01", f"{time}-12")).mean(dim="time").squeeze()
-    else:
-      raise Exception("Time input format matches neither 'YYYY' or 'YYYY-MM' (length {len(time)})") 
-
-    # print(data_processed)
-
-    if len(data_processed.dims) > 2:
-      if self.lev is None:
-        raise Exception(f"Too many dimensions: {data_processed.dims}. Specify more!")
-      else:
-        data_processed = data_processed.sel(lev=self.lev, method='nearest').squeeze()
-        if len(data_processed.dims) > 2:
-          raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
-    
-    if experiment1 is not None and variable1 is not None and time1 is not None:
-      if len(time1) == 7:
-        data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=time1).squeeze()
-      elif len(time1) == 4:
-        data_processed1 = self.dt[experiment1][variable1].ds[variable1].sel(time=slice(f"{time1}-01", f"{time1}-12")).mean(dim="time").squeeze()
-      else:
-        raise Expception("Time input format matches neither 'YYYY' or 'YYYY-MM' (length {len(time1)})") 
-
-      if len(data_processed1.dims) > 2:
-        if self.lev is None:
-          raise Exception(f"Too many dimensions: {data_processed1.dims}. Specify more!")
-        else:
-          data_processed1 = data_processed1.sel(lev=self.lev, method='nearest').squeeze()
-          if len(data_processed1.dims) > 2:
-            raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed1.dims}")
-
-      return data_processed1 - data_processed
-    
-    return data_processed
-
-  def get_data_slides(self, experiment, variable):
-
-    data_processed = self.dt[experiment][variable].ds[variable].squeeze()
-
-    if len(data_processed.dims) > 3:
-      if self.lev is None:
-        raise Exception(f"Too many dimensions: {data_processed.dims}. Expected time, x, y")
-      else:
-        data_processed = self.dt[experiment][variable].sel(lev=self.lev, method='nearest').squeeze()
-        if len(data_processed.dims) > 3:
-          raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
-
-    return data_processed
-
-  def get_data_slides(self, main, baseline=None):
-
-    time, experiment, variable = main
-    time1 = None
-    experiment1 = None
-    variable1 = None
-    if baseline is not None:
-      try:
-        time1, experiment1, variable1 = baseline
-      except TypeError:
-        raise Exception(f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (experiment, variable) format.")
-
-    data_processed = self.dt[experiment][variable].ds[variable].squeeze()
-
-    if len(data_processed.dims) > 3:
-      if self.lev is None:
-        raise Exception(f"Too many dimensions: {data_processed.dims}. Expected time, x, y")
-      else:
-        data_processed = self.dt[experiment][variable].sel(lev=self.lev, method='nearest').squeeze()
-        if len(data_processed.dims) > 3:
-          raise Exception(f"Processed data with time and lev, still too many dimensions: {data_processed.dims}")
-
-    if experiment1 is not None and variable1 is not None and time1 is not None:
-      data_processed1 = self.get_data_frame(main=baseline)
-      # print((data_processed1 - data_processed).values)
-      return data_processed1 - data_processed
-    
-    return data_processed
-
-  def make_plot(self, cmap, title, main, baseline=None, central_lon=0, vmin=None, vmax=None):
-    
-    fig, ax = plt.subplots(
-      ncols=1, nrows=1, figsize = [8,4], subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
-    )
-
-    data = self.get_data_frame(main, baseline)
-    
-    try:
-      p = data.plot(
-        ax=ax,
-        vmin=vmin,
-        vmax=vmax,
-        x="lon",
-        y="lat",
-        transform=ccrs.PlateCarree(),
-        cmap=cmap,
-        robust=True,
-      )
-    except ValueError:
-      raise Exception("Use format 'cmocean.cm.[cmap name]' where cmap name is from https://matplotlib.org/cmocean/")
-
-    ax.coastlines()
-    ax.coastlines(color="grey", lw=0.5) #parameters for the lines on the coasts
-      
-    for lat in [-90, -60, -30, 0, 30, 60, 90]:
-      ax.axhline(lat,color='k',ls='--')
-    
-    lon_formatter = LongitudeFormatter(zero_direction_label=True)
-    ax.xaxis.set_major_formatter(lon_formatter)
-    lat_formatter = LatitudeFormatter()
-    ax.yaxis.set_major_formatter(lat_formatter)
-  
-    ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
-    ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
-
-    ax.add_feature(cart.feature.LAND, zorder=100, edgecolor="k")
-    ax.set_title(title) # set a title
-
-    return fig
-
-  def make_animation(self, years, months, vmin, vmax, cmap, main, baseline=None, central_lon=0, name="animation"):
-    #!rm -r -f "/content/temp_images"
-    #!mkdir -p "/content/temp_images"
-    os.system("rm -r -f '/content/temp_images'")
-    os.system("mkdir -p '/content/temp_images'")
-
-    frames = []
-
-    main_time, main_exp, main_var = main
-    
-    for year in years:  # years from parameters
-      if len(months) == 0:
-        p = self.make_plot(
-          cmap=cmap,  # color mapping from parameters
-          title=f"Average for {year}",  # make sure to change title to what you want
-          main = ("", main_exp, main_var),
-          baseline = baseline,
-          central_lon=central_lon,
-          vmin=vmin,
-          vmax=vmax
+        plt.style.use(
+            "https://raw.githubusercontent.com/ClimateMatchAcademy/course-content/main/cma.mplstyle"
         )
-        plt.close()
-        p.savefig(f'/content/temp_images/{year}.png')
-        frames.append(cv2.imread(f'/content/temp_images/{year}.png'))
 
-      else:
-        for month in months:
-          print(f"{year}-{month:02d}")
-          p = self.make_plot(
-            cmap=cmap,  # color mapping from parameters
-            title=f"{year}-{month:02d}",  # make sure to change title to what you want,
-            main = (f"{year}-{month:02d}", main_exp, main_var),
-            baseline = baseline,
-            central_lon=central_lon,
-            vmin=vmin,
-            vmax=vmax
-          )
-          plt.close()
-          p.savefig(f'/content/temp_images/{year}-{month:02d}.png')
-          frames.append(cv2.imread(f'/content/temp_images/{year}-{month:02d}.png'))
+        # %matplotlib inline
 
-    height,width,layers=frames[1].shape
+        col = intake.open_esm_datastore(
+            "https://storage.googleapis.com/cmip6/pangeo-cmip6.json"
+        )
 
-    video=cv2.VideoWriter(
-        f'/content/{name}.mp4',
-        cv2.VideoWriter.fourcc(*"mp4v"),
-        6, # fps
-        (width,height)
-    )
+        kwargs = dict(
+            preprocess=combined_preprocessing,  # apply xMIP fixes to each dataset
+            xarray_open_kwargs=dict(
+                use_cftime=True
+            ),  # ensure all datasets use the same time index
+            storage_options={
+                "token": "anon"
+            },  # anonymous/public authentication to google cloud storage
+        )
 
-    for frame in frames:
-        video.write(frame)
+        cat = col.search(
+            **self.query,
+            require_all_on=[
+                "source_id"
+            ],  # make sure that we only get models which have all of the above experiments
+        )
 
-    cv2.destroyAllWindows()
-    video.release()
+        if len(cat) == 0:
+            raise Exception(f"Query returned nothing")
 
-    # def make_animation(self, years, months, vmin, vmax, cmap, main, baseline=None, central_lon=0, name="animation"):
-    # movie_data = self.get_data_slides(main, baseline)
-    
-    # if "time" not in movie_data.dims:
-    #   raise Exception(f"Attempted to make movie but missing time component: {movie_data.dims}")
+        if "table_id" not in query:
+            if time_frame is None:
+                raise Exception(
+                    "No table_id or time_frame specified. Either specify table_id in query, or time_frame as general "
+                    "parameter.")
 
-    # #!rm -r -f "/content/temp_images"
-    # #!mkdir -p "/content/temp_images"
-    # os.system("rm -r -f '/content/temp_images'")
-    # os.system("mkdir -p '/content/temp_images'")
+            table_id_found = False
 
-    # frames = []
-    
-    # for year in years:  # years from parameters
-    #   if len(months) == 0:
-    #     frame_data = movie_data.sel(time=slice(f"{year}-01", f"{year}-12")).mean(dim="time")
-    #     p = generate_map_plot(
-    #         data=frame_data,
-    #         cmap=cmap,  # color mapping from parameters
-    #         title=f"Average for {year}",  # make sure to change title to what you want,
-    #         central_lon=central_lon,
-    #         vmin=vmin,
-    #         vmax=vmax
-    #     )
-    #     plt.close()
-    #     p.savefig(f'/content/temp_images/{year}.png')
-    #     frames.append(cv2.imread(f'/content/temp_images/{year}.png'))
+            # Gets first table_id that includes the time_frame, adds it to query, and re-runs query
+            # Raises an error if no appropriate table_id found
+            for possible_id in cat.df["table_id"].unique():
+                if time_frame in possible_id:
+                    print(f"****Using {possible_id} as table_id (options were {cat.df['table_id'].unique()})****")
+                    table_id_found = True
+                    query["table_id"] = possible_id
 
-    #   else:
-    #     for month in months:
-    #       print(f"{year}-{month:02d}")
-    #       frame_data = movie_data.sel(time=f"{year}-{month:02d}")    
-    #       p = generate_map_plot(
-    #           data=frame_data,
-    #           cmap=cmap,  # color mapping from parameters
-    #           title=f"{year}-{month:02d}",  # make sure to change title to what you want,
-    #           central_lon=central_lon,
-    #           vmin=vmin,
-    #           vmax=vmax
-    #       )
-    #       plt.close()
-    #       p.savefig(f'/content/temp_images/{year}-{month:02d}.png')
-    #       frames.append(cv2.imread(f'/content/temp_images/{year}-{month:02d}.png'))
+                    cat = col.search(
+                        **self.query,
+                        require_all_on=[
+                            "source_id"
+                        ],  # make sure that we only get models which have all of the above experiments
+                    )
 
-    # height,width,layers=frames[1].shape
+                    break
 
-    # video=cv2.VideoWriter(
-    #     f'/content/{name}.mp4',
-    #     cv2.VideoWriter.fourcc(*"mp4v"),
-    #     6, # fps
-    #     (width,height)
-    # )
+            if not table_id_found:
+                raise Exception(
+                    f"No table_id found with time frame '{time_frame}'. "
+                    f"Possible table_ids: {cat.df['table_id'].unique()}")
 
-    # for frame in frames:
-    #     video.write(frame)
+        self.cat = cat.esmcat.aggregation_control.groupby_attrs = ["experiment_id", "variable_id"]
+        print(cat.df["table_id"].unique())
+        print(cat.df["experiment_id"].unique())
+        print(cat.df["member_id"].unique())
+        self.dt = cat.to_datatree(**kwargs)
 
-    # cv2.destroyAllWindows()
-    # video.release()
+        # self.data = dt[query["experiment_id"]][query["variable_id"]]
+        # self.cmap = cmap
+        self.specifics = specifics
 
+    def sel_time(self, data, experiment, time, data_slice=False):
 
+        # If experiment is one of these two historical experiments, get average over
+        # all years. Else, average over interval if given, or select specific time
+        if not slice and (experiment == "historical" or experiment == "land-hist"):
+            data = data.mean(dim="time").squeeze()
+        elif len(time) == 1:
+            data = data.sel(time=time[0]).squeeze()
+        elif not data_slice and len(time) == 2:
+            data = data.sel(time=slice(time[0], time[1])).mean(dim="time").squeeze()
+        elif data_slice and len(time) == 2:
+            data = data.sel(time=slice(time[0], time[1])).squeeze()
+        else:
+            raise Exception(
+                "Time input format is neither ('YYYY-MM') or ('YYYY-MM', 'YYYY-MM'), but can be empty when experiment "
+                "is historical or land-hist")
+
+        return data
+
+    def attempt_dim_fix(self, data, desired_dims):
+        while len(data.dims) > desired_dims:
+            print(f"Need to specify more dimensions of set {data.dims}! Aiming for {desired_dims} free dimensions.")
+            dimension = input("Which dimension do you want to specify? ")
+            value = int(input(f"What value do you want to use for {dimension}"))
+
+            try:
+                self.specifics[dimension] = value
+                print(self.specifics)
+                data = data.sel(self.specifics, method='nearest').squeeze()
+            except KeyError:
+                print(
+                    "That didn't work. Try again or key interrupt. Maybe specify more specifics with "
+                    "'self.specifics[dim] = val'?")
+
+        return data
+
+    def sel_specifics(self, data, experiment):
+
+        # If baseline variable is primary productivity, then sum up values from 0m to 100m,
+        # and multiply by 100m (basically Riemann sum assuming lev intervals are even)
+        if experiment == "pp":
+            print("WARNING: PRIMARY PRODUCTIVITY IS AUTOMATICALLY INTEGRATED OVER DEPTH")
+            data = data.sel(lev=slice(0, 100), method='nearest').sum(dim="lev").squeeze() * 100
+        else:
+            data = data.sel(self.specifics, method='nearest').squeeze()
+
+        return data
+
+    def update_baseline(self, baseline_params):
+
+        print(f"Updating baseline with params {baseline_params}")
+
+        # Save and unpack baseline parameters
+        self.baseline_params = baseline_params
+        try:
+            base_time, base_experiment, base_variable = baseline_params
+        except TypeError:
+            raise Exception(
+                f"Tried unpacking extra combo, but couldn't figure out how to unpack it. Expected (time, experiment, "
+                f"variable) format.")
+
+        # Fetch the basic data for the experiment and variable
+        self.baseline_data = self.dt[base_experiment][base_variable].ds[base_variable]
+
+        # Select specifics like lev, also deal with cases like experiment = primary productivity integrating over depth
+        self.baseline_data = self.sel_specifics(self.baseline_data, base_experiment)
+
+        # Select time, averaging over all historical if experiment = historical
+        self.baseline_data = self.sel_time(self.baseline_data, base_experiment, base_time)
+
+        # If there are still outstanding dimensions, try to fix. If fix fails, give suggestions
+        self.baseline_data = self.attempt_dim_fix(self.baseline_data, desired_dims=2)
+
+    def get_data(self, main, baseline_params=None, data_slice=False):
+        # return self.dt[experiment][variable]
+
+        # If there are baseline parameters that don't match what's already in there, update baseline
+        # If no baseline is given, then remove baseline parameters and data
+        if baseline_params is not None and baseline_params != self.baseline_params:
+            self.update_baseline(baseline_params)
+        elif baseline_params is None:
+            self.baseline_params = None
+            self.baseline_data = None
+
+        # Unpack main time, experiment, and variable
+        try:
+            time, experiment, variable = main
+        except KeyError:
+            raise Exception(
+                "Was expecting main input to have one of the following formats:\n  ([time_start, time_end], "
+                "experiment, variable)\n  ([time], experiment, variable)")
+
+        # Select basic main data
+        main_data = self.dt[experiment][variable].ds[variable]
+
+        # Select appropriate time, specifics (like lev), and attempt to fix too many dimensions issue
+        main_data = self.sel_time(main_data, experiment, time, data_slice)
+        main_data = self.sel_specifics(main_data, experiment)
+
+        main_data = self.attempt_dim_fix(
+            main_data,
+            desired_dims=3 if data_slice else 2
+        )
+
+        # If there is baseline data, then return change as multiple of historical, otherwise just main
+        if self.baseline_data is not None:
+            return (main_data - self.baseline_data) / self.baseline_data
+        else:
+            return main_data
+
+    def make_plot(self, title, cmap_label, cmap, main, baseline=None, central_lon=0, vmin=None, vmax=None,
+                  block_land=True):
+
+        # Initialize figure (bit)
+        fig, ax = plt.subplots(
+            ncols=1, nrows=1, figsize=[12, 6],
+            subplot_kw={"projection": ccrs.PlateCarree(central_longitude=central_lon)}
+        )
+
+        # Get data
+        data = self.get_data(main, baseline)
+
+        # Plot (alerting if cmap error)
+        try:
+            # with Profile() as profile:
+            data.plot(
+                ax=ax,
+                vmin=vmin,
+                vmax=vmax,
+                x="lon",
+                y="lat",
+                transform=ccrs.PlateCarree(),
+                cmap=cmap,
+                robust=True,
+                cbar_kwargs={"label": cmap_label}
+            )
+            # Stats(profile).strip_dirs().sort_stats("cumtime").print_stats()
+        except ValueError:
+            # This may be misleading and cause problems if the value error is from something besides cmap.
+            raise Exception(
+                "Use format 'cmocean.cm.[cmap name]' where cmap name is from https://matplotlib.org/cmocean/")
+        except TypeError:
+            raise Exception(f"Pretty sure there are too many dimensions: {data.dims}")
+
+        # If land should be blocked (i.e. looking only at ocean), draw land in
+        if block_land:
+            ax.add_feature(cart.feature.LAND, zorder=100, edgecolor="k")
+        ax.coastlines()
+        ax.coastlines(color="k", lw=0.75)  # parameters for the lines on the coasts
+
+        # Add lat lines (nice for looking at atmos cells)
+        for lat in [-90, -60, -30, 0, 30, 60, 90]:
+            ax.axhline(lat, color='k', ls='--')
+
+        # Format lat and lon tick marks
+        lon_formatter = LongitudeFormatter(zero_direction_label=True)
+        ax.xaxis.set_major_formatter(lon_formatter)
+        lat_formatter = LatitudeFormatter()
+        ax.yaxis.set_major_formatter(lat_formatter)
+
+        ax.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree(central_longitude=central_lon))
+        ax.set_yticks([-90, -60, -30, 0, 30, 60, 90], crs=ccrs.PlateCarree())
+
+        ax.set_title(title)  # set a title
+
+        return fig
+
+    def make_animation(self, years, months, vmin, vmax, cmap, main, cmap_label, baseline=None, central_lon=0,
+                       name="animation"):
+        # Remove and create temp_images folder (to clear folder)
+        os.system("rm -r -f '/content/temp_images'")
+        os.system("mkdir -p '/content/temp_images'")
+
+        # Initialize array for OpenCV VideoWriter
+        frames = []
+
+        # Unpack main time, experiment, and variable
+        main_time, main_exp, main_var = main
+
+        print(f"Years: {len(years)}, months: {len(months)}")
+        times = []
+
+        # For year in years....
+        for year in years:
+            # Add times
+            if len(months) == 0:
+                times.append([f"{year}-01", f"{year}-12"])
+            else:
+                for month in months:
+                    times.append([f"{year}-{month:02d}"])
+
+        for time in times:
+            if len(time) == 2:
+                year = time[0][0:4]
+                title = f"Average for {year}"  # make sure to change title to what you want
+            elif len(time) == 1:
+                year_month = time[0]
+                title = f"{year_month}"  # make sure to change title to what you want
+            else:
+                raise Exception(f"Time given ({time}) is neither an interval or single value")
+
+            print(title)
+            p = self.make_plot(
+                cmap=cmap,  # color mapping from parameters
+                title=title,
+                main=(time, main_exp, main_var),
+                baseline=baseline,
+                central_lon=central_lon,
+                vmin=vmin,
+                vmax=vmax,
+                cmap_label=cmap_label
+            )
+            plt.close()
+            p.savefig(f'/content/temp_images/{title}.png')
+            frames.append(cv2.imread(f'/content/temp_images/{title}.png'))
+
+        height, width, layers = frames[1].shape
+
+        video = cv2.VideoWriter(
+            f'/content/{name}.mp4',
+            cv2.VideoWriter.fourcc(*"mp4v"),
+            6,  # fps
+            (width, height)
+        )
+
+        for frame in frames:
+            video.write(frame)
+
+        cv2.destroyAllWindows()
+        video.release()
