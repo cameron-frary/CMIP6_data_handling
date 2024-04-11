@@ -88,6 +88,8 @@ gfdl_esm4_pressure.make_plot(
 ```
 ![download](https://github.com/cameron-frary/CMIP6_data_handling/assets/146021383/4fb7d082-fcfb-4fda-b0b1-f5f33a698081)
 
+The automatically chosen `vmin` and `vmax` of -0.003 and 0.003 would inform the limits when generating an animation.
+
 
 #### `make_animation(self, years, months, vmin, vmax, cmap, main, cmap_label, baseline=None, central_lon=0, name="animation")`
 
@@ -108,13 +110,13 @@ Optional:
 - `central_lon` (default `0`): central longitude of the plot. For example, `central_lon = -105` will center 105 degrees W for focus on the Pacific Ocean.
 - `name` (default `"animation"`): filename of the outputted `.mp4`.
 
-Example usage **after specifying `model_id` from the initialization example**:
+Example usage **after specifying `model_id` from the initialization example**. Note that we used the `vmin` and `vmax` values chosen by default in the `make_plot()` example:
 ```
 gfdl_esm4_pressure.make_animation(
     years = range(2090,2101),
     months = [],
-    vmin = -2,
-    vmax = 2,
+    vmin = -0.003,
+    vmax = 0.003,
     cmap = cmocean.cm.balance,
     cmap_label = "Change as multiple of historical",
     main = ([], "ssp585", "ps"),
