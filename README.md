@@ -16,4 +16,9 @@ Please also note that procedures involving comparisons between simulation data t
 
 ### `CMIP6_Data_Manager`
 
-This is the main object.
+This is the main object. It contains everything you need. The initialization function takes the following parameters:
+
+- `query`: a dictionary containing fields to be passed to the CMIP6 search. Some common keys are `source_id` (model), `variable_id` (variable), `experiment_id` (experiment/forcing situation), and `table_id` (combination of part of model and time resolution). Values can be arrays. I highly recommend specifying at least the first three.
+- `time_frame` (default `None`): a string specifying desired time resolution. Examples include `"mon"`, `"day"`, or `"yr"`. Not strictly necessary, but helpful when `table_id` is not specified in `query`.
+
+#### 
