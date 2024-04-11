@@ -50,7 +50,12 @@ gfdl_esm4_pressure = CMIP6_Data_Manager(
 We see from the following output that a `table_id` was automatically chosen. Other possible `table_id`s are displayed in case you want to specify a `table_id` (here `CFmon` might be a good option as it seems to be coupled---it incorporates data from several parts of the model). 
 ```
 ****Using Amon as table_id (options were ['Amon' 'CFday' 'CFmon' 'AERmon' 'Emon'])****
+source_ids: ['CFmon']
+experiment_ids: ['ssp585' 'historical']
+model_ids: ['r3i1p1f1' 'r2i1p1f1' 'r1i1p1f1']
 ```
+
+We also see that more than one model_id is found, so we should re-run the query, specifying the `model_id="r1i1p1f1"` in the query dictionary, for example.
 
 #### `make_plot(self, title, cmap_label, cmap, main, baseline=None, central_lon=0, vmin=None, vmax=None, block_land=True)`
 
@@ -83,7 +88,7 @@ Required:
 - `vmin`, `vmax`: min and max values for the colormap, respectively. Needs to be specified for consistent color range across frames.
 - `cmap`: colormap (should be from `cmocean.cm`)
 - `cmap_label`: label of colormap
-- `main`: data to be plotted (unless `baseline` specified). Should have format `(time, experiment, variable)`. The `time` part of the triple should be an array of format `[time]` or `[time1, time2]`. The format of specific times is either "YYYY" or "YYYY-MM".
+- `main`: data to be plotted (unless `baseline` specified). Should have format `(time, experiment, variable)`. The `time` part of the triple doesn't really matter here because the animation method will change it according to the year and month (if given).
 
 Optional:
 
