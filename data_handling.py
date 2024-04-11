@@ -79,9 +79,9 @@ class CMIP6_Data_Manager:
                     f"Possible table_ids: {cat.df['table_id'].unique()}")
 
         self.cat = cat.esmcat.aggregation_control.groupby_attrs = ["experiment_id", "variable_id"]
-        print(cat.df["table_id"].unique())
-        print(cat.df["experiment_id"].unique())
-        print(cat.df["member_id"].unique())
+        print(f"source_ids: {cat.df["table_id"].unique()}")
+        print(f"experiment_ids: {cat.df["experiment_id"].unique()}")
+        print(f"member_ids: {cat.df["member_id"].unique()}")
         self.dt = cat.to_datatree(**kwargs)
 
         # self.data = dt[query["experiment_id"]][query["variable_id"]]
