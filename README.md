@@ -1,7 +1,5 @@
 This is a package written by Cameron Frary to make it simpler and easier to use data from the Coupled Model Intercomparison Project Phase 6 (CMIP6). There is only one object with seven methods. Users can easily select their desired model-experiment-variable combination, and create plots and animation. It is also easy to retrieve data from the object for external manipulation.
 
-Using the package only requires cloning the repository and importing `CMIP6_Data_Manager` from `CMIP6_data_handling.data_handling`.
-
 ## Why
 
 The object deals with all the initialization of objects necessary to the CMIP6 query, and deals with facets of plotting and animations that most would usually like to ignore.
@@ -11,6 +9,30 @@ The object deals with all the initialization of objects necessary to the CMIP6 q
 The package has only been used in Google Colab. We had some difficulty installing and importing some dependencies on other systems and the code for doing so in Colab was provided.
 
 Please also note that procedures involving comparisons between simulation data take significantly longer than the same procedures without comparison. Bottlenecks in the `xarray` package are to blame.
+
+## Colab setup
+
+```
+!pip install condacolab &> /dev/null
+import condacolab
+condacolab.install()
+
+# Install all packages in one call (+ use mamba instead of conda), this must in one line or code will fail
+!mamba install xarray-datatree intake-esm gcsfs xmip aiohttp cartopy nc-time-axis cf_xarray xarrayutils "esmf<=8.3.1" xesmf &> /dev/null
+
+!pip install seaborn --quiet
+!pip install cmocean --quiet
+!pip install cartopy --quiet
+!pip install geoviews --quiet
+!pip install gsw --quiet
+!pip install opencv-python --quiet
+
+import cmocean
+
+!git clone https://github.com/cameron-frary/CMIP6_data_handling.git &> /dev/null
+from CMIP6_data_handling.data_handling import CMIP6_Data_Manager
+```
+Importing the package automatically imports the necessary libraries installed with `condacolab` and `pip` above.
 
 ## Structure
 
